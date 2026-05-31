@@ -24,15 +24,15 @@
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body { background: var(--paper); font-family: 'DM Sans', sans-serif; color: var(--ink); max-width: 480px; margin: 0 auto; min-height: 100vh; }
 
-    header { background: var(--ink); padding: 24px 20px 0; position: sticky; top: 0; z-index: 50; }
+    header { background: #8b2e2e; padding: 24px 20px 0; position: sticky; top: 0; z-index: 50; }
     .header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
     .app-title { font-family: 'Playfair Display', serif; font-size: 26px; color: var(--gold-light); line-height: 1; }
-    .app-sub { font-size: 11px; color: #7a6a50; margin-top: 4px; font-style: italic; letter-spacing: 0.05em; }
+    .app-sub { font-size: 11px; color: #f0c8c8; margin-top: 4px; font-style: italic; letter-spacing: 0.05em; }
     .header-btn { background: var(--gold); color: var(--ink); border: none; border-radius: 20px; padding: 8px 16px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; white-space: nowrap; }
 
     .days-nav { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 0; scrollbar-width: none; }
     .days-nav::-webkit-scrollbar { display: none; }
-    .day-pill { flex-shrink: 0; padding: 8px 14px 10px; border-radius: 10px 10px 0 0; border: none; background: transparent; color: #7a6a50; font-size: 13px; cursor: pointer; font-family: inherit; display: flex; flex-direction: column; align-items: center; gap: 1px; transition: all 0.2s; }
+    .day-pill { flex-shrink: 0; padding: 8px 14px 10px; border-radius: 10px 10px 0 0; border: none; background: transparent; color: rgba(255,255,255,0.7); font-size: 13px; cursor: pointer; font-family: inherit; display: flex; flex-direction: column; align-items: center; gap: 1px; transition: all 0.2s; }
     .day-pill.active { background: var(--paper); color: var(--ink); }
     .day-pill .day-num { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; line-height: 1; }
     .day-pill .day-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; }
@@ -123,11 +123,11 @@
 <header>
   <div class="header-top">
     <div>
-      <div class="app-title">✈ Mon Voyage</div>
+      <div class="app-title">🚆 Mon Voyage</div>
       <div class="app-sub">Journal de bord à deux</div>
     </div>
     <div style="display:flex;gap:8px">
-      <button class="header-btn" style="background:transparent;color:var(--gold-light);border:1px solid #3a3020;font-size:12px;padding:7px 12px" onclick="openExport()">⬆ Export</button>
+      <button class="header-btn" style="background:transparent;color:var(--gold-light);border:1px solid #c06060;font-size:12px;padding:7px 12px" onclick="openExport()">⬆ Export</button>
       <button class="header-btn" onclick="openAddDay()">+ Jour</button>
     </div>
   </div>
