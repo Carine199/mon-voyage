@@ -70,6 +70,7 @@
     .field-row > * { min-width: 0; overflow: hidden; }
     .field-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 3px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .field-input { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); background: white; font-size: 13px; font-family: inherit; color: var(--ink); outline: none; }
+    input[type="time"].field-input { padding: 8px 2px; font-size: 12px; -webkit-appearance: none; appearance: none; }
     .field-input:focus { border-color: var(--gold); }
     .field-textarea { width: 100%; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--border); background: white; font-size: 14px; font-family: inherit; color: var(--ink); outline: none; resize: vertical; min-height: 60px; }
     .field-textarea:focus { border-color: var(--gold); }
@@ -226,11 +227,11 @@ function renderTrains(trains) {
         <div class="field-row">
           <div>
             <label class="field-label">Heure départ</label>
-            <input type="text" inputmode="numeric" placeholder="14:48" class="field-input" value="${esc(t.depart||'')}" oninput="updateTrainField('${t.id}','depart',this.value)" />
+            <input type="time" class="field-input" value="${esc(t.depart||'')}" oninput="updateTrainField('${t.id}','depart',this.value)" />
           </div>
           <div>
             <label class="field-label">Heure arrivée</label>
-            <input type="text" inputmode="numeric" placeholder="20:23" class="field-input" value="${esc(t.arrivee||'')}" oninput="updateTrainField('${t.id}','arrivee',this.value)" />
+            <input type="time" class="field-input" value="${esc(t.arrivee||'')}" oninput="updateTrainField('${t.id}','arrivee',this.value)" />
           </div>
         </div>
         <div>
@@ -353,11 +354,11 @@ function render() {
           <div class="field-row">
             <div>
               <label class="field-label">Check-in</label>
-              <input type="text" inputmode="numeric" placeholder="15:00" class="field-input" id="h-checkin" value="${esc(day.hotel?.checkin||'')}" oninput="updateHotel()" />
+              <input type="time" class="field-input" id="h-checkin" value="${esc(day.hotel?.checkin||'')}" oninput="updateHotel()" />
             </div>
             <div>
               <label class="field-label">Check-out</label>
-              <input type="text" inputmode="numeric" placeholder="12:00" class="field-input" id="h-checkout" value="${esc(day.hotel?.checkout||'')}" oninput="updateHotel()" />
+              <input type="time" class="field-input" id="h-checkout" value="${esc(day.hotel?.checkout||'')}" oninput="updateHotel()" />
             </div>
           </div>
           <div>
