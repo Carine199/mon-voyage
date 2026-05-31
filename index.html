@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Mon Voyage" />
+  <title>Mon Voyage ✈️</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #0f0c07;
+      --paper: #faf6ef;
+      --cream: #f2ead9;
+      --gold: #b8882a;
+      --gold-light: #e8c86a;
+      --rust: #c0512a;
+      --sage: #5a7a5a;
+      --muted: #8c7d68;
+      --border: #ddd3c0;
+      --card: #fff9f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--paper); font-family: 'DM Sans', sans-serif; color: var(--ink); max-width: 480px; margin: 0 auto; min-height: 100vh; }
+
+    header { background: var(--ink); padding: 24px 20px 0; position: sticky; top: 0; z-index: 50; }
+    .header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+    .app-title { font-family: 'Playfair Display', serif; font-size: 26px; color: var(--gold-light); line-height: 1; }
+    .app-sub { font-size: 11px; color: #7a6a50; margin-top: 4px; font-style: italic; letter-spacing: 0.05em; }
+    .header-btn { background: var(--gold); color: var(--ink); border: none; border-radius: 20px; padding: 8px 16px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; white-space: nowrap; }
+
+    .days-nav { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 0; scrollbar-width: none; }
+    .days-nav::-webkit-scrollbar { display: none; }
+    .day-pill { flex-shrink: 0; padding: 8px 14px 10px; border-radius: 10px 10px 0 0; border: none; background: transparent; color: #7a6a50; font-size: 13px; cursor: pointer; font-family: inherit; display: flex; flex-direction: column; align-items: center; gap: 1px; transition: all 0.2s; }
+    .day-pill.active { background: var(--paper); color: var(--ink); }
+    .day-pill .day-num { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; line-height: 1; }
+    .day-pill .day-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; }
+
+    #content { padding: 16px 10px 100px; }
+
+    .empty-days { text-align: center; padding: 80px 20px; color: var(--muted); }
+    .empty-days .big { font-size: 52px; margin-bottom: 16px; }
+    .empty-days .msg { font-family: 'Playfair Display', serif; font-size: 20px; font-style: italic; margin-bottom: 8px; }
+    .empty-days .hint { font-size: 14px; }
+
+    .day-date-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .day-date-display { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--gold); }
+    .day-date-str { font-size: 12px; color: var(--muted); font-style: italic; }
+
+    .section { background: var(--card); border-radius: 14px; border: 1px solid var(--border); margin-bottom: 14px; }
+    .section-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 14px 12px; cursor: pointer; border-bottom: 1px solid var(--border); }
+    .section-left { display: flex; align-items: center; gap: 10px; }
+    .section-icon { font-size: 20px; }
+    .section-title { font-family: 'Playfair Display', serif; font-size: 16px; }
+    .section-badge { font-size: 11px; color: var(--muted); background: var(--cream); border-radius: 10px; padding: 2px 8px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .section-toggle { color: var(--muted); font-size: 11px; flex-shrink: 0; }
+    .section-body { padding: 10px; }
+    .section-body.collapsed { display: none; }
+
+    /* TRAIN MULTIPLE */
+    .train-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 10px; margin-bottom: 10px; }
+    .train-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .train-card-title { font-size: 12px; font-weight: 600; color: var(--gold); text-transform: uppercase; letter-spacing: 0.06em; }
+    .train-del-btn { background: none; border: none; color: #ccc; font-size: 18px; cursor: pointer; line-height: 1; padding: 0; }
+    .train-del-btn:active { color: var(--rust); }
+    .add-train-btn { width: 100%; padding: 10px; border-radius: 8px; border: 1px dashed var(--gold); background: transparent; color: var(--gold); font-size: 13px; cursor: pointer; font-family: inherit; margin-top: 4px; }
+
+    .field-row { display: flex; gap: 8px; }
+    .field-row > * { flex: 1; min-width: 0; }
+    .field-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 3px; display: block; }
+    .field-input { width: 100%; padding: 8px 8px; border-radius: 8px; border: 1px solid var(--border); background: white; font-size: 13px; font-family: inherit; color: var(--ink); outline: none; }
+    .field-input:focus { border-color: var(--gold); }
+    .field-textarea { width: 100%; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--border); background: white; font-size: 14px; font-family: inherit; color: var(--ink); outline: none; resize: vertical; min-height: 60px; }
+    .field-textarea:focus { border-color: var(--gold); }
+    .field-group { display: flex; flex-direction: column; gap: 8px; }
+
+    .hotel-fields { display: flex; flex-direction: column; gap: 10px; }
+    .stars-row { display: flex; gap: 4px; margin-top: 2px; }
+    .star-btn { font-size: 20px; background: none; border: none; cursor: pointer; padding: 0; line-height: 1; filter: grayscale(1) opacity(0.4); }
+    .star-btn.on { filter: none; }
+
+    .todo-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+    .todo-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: white; border-radius: 8px; border: 1px solid var(--border); }
+    .todo-check { width: 20px; height: 20px; border-radius: 5px; border: 2px solid var(--border); background: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: white; flex-shrink: 0; cursor: pointer; transition: all 0.15s; }
+    .todo-item.done .todo-check { background: var(--sage); border-color: var(--sage); }
+    .todo-item.done .todo-text { text-decoration: line-through; color: var(--muted); }
+    .todo-text { flex: 1; font-size: 14px; cursor: pointer; }
+    .todo-del { background: none; border: none; color: #ccc; font-size: 16px; cursor: pointer; padding: 0 2px; line-height: 1; }
+    .todo-add-row { display: flex; gap: 8px; }
+    .todo-add-input { flex: 1; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--border); background: white; font-size: 14px; font-family: inherit; color: var(--ink); outline: none; }
+    .todo-add-input:focus { border-color: var(--gold); }
+    .todo-add-btn { width: 40px; height: 40px; border-radius: 8px; background: var(--ink); color: var(--gold-light); border: none; font-size: 20px; cursor: pointer; }
+
+    .delete-day-btn { width: 100%; padding: 10px; margin-top: 4px; background: none; border: 1px dashed #e0c0b0; border-radius: 10px; color: var(--rust); font-size: 13px; cursor: pointer; font-family: inherit; }
+
+    #fab { position: fixed; bottom: 28px; right: max(20px, calc(50% - 220px)); width: 58px; height: 58px; border-radius: 50%; background: var(--ink); color: var(--gold-light); font-size: 28px; border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; z-index: 40; line-height: 1; }
+
+    #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: none; align-items: flex-end; justify-content: center; z-index: 200; }
+    #overlay.open { display: flex; }
+    #modal { background: var(--card); border-radius: 20px 20px 0 0; padding: 28px 20px 40px; width: 100%; max-width: 480px; }
+    .modal-title { font-family: 'Playfair Display', serif; font-size: 20px; margin-bottom: 18px; }
+    .modal-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px; display: block; }
+    .modal-input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: white; font-size: 14px; font-family: inherit; color: var(--ink); outline: none; margin-bottom: 12px; }
+    .modal-input:focus { border-color: var(--gold); }
+    .modal-actions { display: flex; gap: 10px; margin-top: 4px; }
+    .btn-cancel { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: white; font-size: 15px; cursor: pointer; font-family: inherit; }
+    .btn-save { flex: 2; padding: 12px; border-radius: 10px; border: none; background: var(--ink); color: var(--gold-light); font-size: 15px; font-weight: 500; cursor: pointer; font-family: inherit; }
+
+    #export-box { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: center; justify-content: center; padding: 20px; }
+    #export-box.open { display: flex; }
+    #export-inner { background: var(--card); border-radius: 16px; padding: 24px 20px; width: 100%; max-width: 440px; }
+    #export-title { font-family: 'Playfair Display', serif; font-size: 18px; margin-bottom: 8px; }
+    #export-hint { font-size: 13px; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
+    #export-text { width: 100%; height: 140px; padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 11px; font-family: monospace; resize: none; background: white; color: var(--ink); }
+    #export-actions { display: flex; gap: 8px; margin-top: 12px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div>
+      <div class="app-title">✈ Mon Voyage</div>
+      <div class="app-sub">Journal de bord à deux</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="header-btn" style="background:transparent;color:var(--gold-light);border:1px solid #3a3020;font-size:12px;padding:7px 12px" onclick="openExport()">⬆ Export</button>
+      <button class="header-btn" onclick="openAddDay()">+ Jour</button>
+    </div>
+  </div>
+  <div class="days-nav" id="days-nav"></div>
+</header>
+
+<div id="content"></div>
+<button id="fab" onclick="openAddDay()">+</button>
+
+<!-- ADD DAY MODAL -->
+<div id="overlay" onclick="maybeCloseModal(event)">
+  <div id="modal">
+    <div class="modal-title">Nouveau jour</div>
+    <label class="modal-label">Nom du jour</label>
+    <input class="modal-input" id="m-label" placeholder="ex: Jour 4 – Cinque Terre" />
+    <label class="modal-label">Date</label>
+    <input type="date" class="modal-input" id="m-date" />
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+      <button class="btn-save" onclick="addDay()">Créer le jour</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT MODAL -->
+<div id="export-box" onclick="if(event.target===this)closeExport()">
+  <div id="export-inner">
+    <div id="export-title">📋 Exporter mes données</div>
+    <div id="export-hint">Appuie sur <strong>Tout sélectionner</strong> puis longuement sur le texte → <strong>Copier</strong>.</div>
+    <textarea id="export-text" readonly></textarea>
+    <div id="export-actions">
+      <button onclick="closeExport()" style="flex:1;padding:11px;border-radius:8px;border:1px solid var(--border);background:white;font-family:inherit;font-size:14px;cursor:pointer">Fermer</button>
+      <button onclick="selectExportText()" style="flex:2;padding:11px;border-radius:8px;border:none;background:var(--ink);color:var(--gold-light);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer">Tout sélectionner</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DONNÉES PAR DÉFAUT (tes données récupérées) ──
+const DEFAULT_DATA = [{"id":1780217376885,"label":"Jour 1","date":"2026-06-27","trains":[{"id":1,"from":"Gare de Lyon","to":"Torino Porta Rosa","depart":"14:48","arrivee":"20:23","numero":"TGV Inouï 9255","note":"Voiture 13 - Places 334  335"}],"hotel":{"nom":"Hôtel Hilton Torino Centro","adresse":"Via dell'Arcivescovado, 18, Turin","tel":"+39011043550","checkin":"15:00","checkout":"12:00","stars":0,"note":"King délice room"},"todos":[],"notes":"1 nuit hotel"},{"id":1780220382720,"label":"Jour 2","date":"2026-06-28","trains":[{"id":2,"from":"Torino Porta Nova","to":"Genova Piazza Principe","depart":"15:15","arrivee":"17:00","numero":"Frecciarossa 8624","note":"Voiture 1 - Places 7D 8D"}],"hotel":{"nom":"Grand Hôtel Savoia Genova","adresse":"Via Arsenale du Terra, 5, Genova","tel":"+3301027721","checkin":"14:00","checkout":"12:00","stars":0,"note":"King Supérior room"},"todos":[]},{"id":1780220861093,"label":"Jour 3","date":"2026-06-29","trains":[{"id":3,"from":"Genova Piazza Principe","to":"La Spezia Centrale","depart":"18:35","arrivee":"19:46","numero":"Frecciagento 8591","note":"Voiture 2 - Places 9A 10A"}],"hotel":{"nom":"The Poet Hotel","adresse":"Via Roma, 139, la Spezia","tel":"+390187714655","checkin":"14:30","checkout":"11:30","stars":0,"note":"Suite junior (Deluxe famille)"},"todos":[]}];
+
+// ── STATE ──
+// Migrate old single-train format to trains array
+function migrateDay(d) {
+  if (!d.trains) {
+    d.trains = d.train && d.train.from ? [{ id: Date.now() + Math.random(), ...d.train }] : [];
+    delete d.train;
+  }
+  return d;
+}
+
+let stored = localStorage.getItem('vj_days');
+let days;
+if (stored) {
+  try { days = JSON.parse(stored).map(migrateDay); } catch(e) { days = DEFAULT_DATA; }
+} else {
+  days = DEFAULT_DATA;
+}
+let activeDay = days[0]?.id || null;
+
+function save() { localStorage.setItem('vj_days', JSON.stringify(days)); }
+function getDay(id) { return days.find(d => d.id === id); }
+
+// ── NAV ──
+function renderNav() {
+  const nav = document.getElementById('days-nav');
+  nav.innerHTML = '';
+  days.forEach((d, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'day-pill' + (d.id === activeDay ? ' active' : '');
+    const dateStr = d.date ? new Date(d.date+'T12:00:00').toLocaleDateString('fr-FR', {day:'2-digit',month:'short'}) : '';
+    btn.innerHTML = `<span class="day-num">${i+1}</span><span class="day-label">${dateStr || d.label.slice(0,6)}</span>`;
+    btn.onclick = () => { activeDay = d.id; render(); };
+    nav.appendChild(btn);
+  });
+}
+
+// ── RENDER TRAINS ──
+function renderTrains(trains) {
+  if (!trains || !trains.length) return '<div style="font-size:13px;color:var(--muted);text-align:center;padding:8px 0 4px">Aucun train pour ce jour</div>';
+  return trains.map((t, idx) => `
+    <div class="train-card" id="tcard-${t.id}">
+      <div class="train-card-header">
+        <span class="train-card-title">🚆 Train ${trains.length > 1 ? idx+1 : ''}</span>
+        <button class="train-del-btn" onclick="deleteTrain('${t.id}')">✕</button>
+      </div>
+      <div class="field-group">
+        <div class="field-row">
+          <div>
+            <label class="field-label">Départ</label>
+            <input class="field-input" placeholder="Gare de départ" value="${esc(t.from||'')}" oninput="updateTrainField('${t.id}','from',this.value)" />
+          </div>
+          <div>
+            <label class="field-label">Arrivée</label>
+            <input class="field-input" placeholder="Gare d'arrivée" value="${esc(t.to||'')}" oninput="updateTrainField('${t.id}','to',this.value)" />
+          </div>
+        </div>
+        <div class="field-row">
+          <div>
+            <label class="field-label">Heure départ</label>
+            <input type="time" class="field-input" value="${esc(t.depart||'')}" oninput="updateTrainField('${t.id}','depart',this.value)" />
+          </div>
+          <div>
+            <label class="field-label">Heure arrivée</label>
+            <input type="time" class="field-input" value="${esc(t.arrivee||'')}" oninput="updateTrainField('${t.id}','arrivee',this.value)" />
+          </div>
+        </div>
+        <div>
+          <label class="field-label">N° train / réservation</label>
+          <input class="field-input" placeholder="ex: TGV 6601" value="${esc(t.numero||'')}" oninput="updateTrainField('${t.id}','numero',this.value)" />
+        </div>
+        <div>
+          <label class="field-label">Notes</label>
+          <textarea class="field-textarea" placeholder="Places, wagon…" oninput="updateTrainField('${t.id}','note',this.value)">${esc(t.note||'')}</textarea>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function updateTrainField(trainId, field, value) {
+  const day = getDay(activeDay); if (!day) return;
+  const t = day.trains.find(x => String(x.id) === String(trainId));
+  if (t) { t[field] = value; save(); }
+  // update badge
+  const badge = document.querySelector('#sec-train .section-badge');
+  if (badge) {
+    const first = day.trains[0];
+    badge.textContent = first?.from ? `${first.from} → ${first.to||'?'}${day.trains.length>1?' +':''}` : '';
+  }
+}
+
+function addTrain() {
+  const day = getDay(activeDay); if (!day) return;
+  if (!day.trains) day.trains = [];
+  day.trains.push({ id: Date.now(), from:'', to:'', depart:'', arrivee:'', numero:'', note:'' });
+  save();
+  document.getElementById('trains-container').innerHTML = renderTrains(day.trains);
+  document.getElementById('add-train-btn-row').scrollIntoView({ behavior: 'smooth' });
+}
+
+function deleteTrain(trainId) {
+  const day = getDay(activeDay); if (!day) return;
+  day.trains = day.trains.filter(x => String(x.id) !== String(trainId));
+  save();
+  document.getElementById('trains-container').innerHTML = renderTrains(day.trains);
+  const badge = document.querySelector('#sec-train .section-badge');
+  if (badge) { const first = day.trains[0]; badge.textContent = first?.from ? `${first.from} → ${first.to||'?'}` : ''; }
+}
+
+// ── RENDER TODOS ──
+function renderTodos(todos) {
+  if (!todos || !todos.length) return '<div style="font-size:13px;color:var(--muted);text-align:center;padding:8px">Aucune activité pour ce jour</div>';
+  return todos.map(t => `
+    <div class="todo-item${t.done?' done':''}" id="todo-${t.id}">
+      <div class="todo-check" onclick="toggleTodo(${t.id})">${t.done?'✓':''}</div>
+      <span class="todo-text" onclick="toggleTodo(${t.id})">${esc(t.text)}</span>
+      <button class="todo-del" onclick="deleteTodo(${t.id})">✕</button>
+    </div>`).join('');
+}
+
+// ── MAIN RENDER ──
+function render() {
+  renderNav();
+  const content = document.getElementById('content');
+  if (days.length === 0) {
+    content.innerHTML = `<div class="empty-days"><div class="big">🧳</div><div class="msg">Votre aventure commence ici</div><div class="hint">Appuyez sur "+ Jour" pour commencer</div></div>`;
+    return;
+  }
+  const day = getDay(activeDay) || days[0];
+  activeDay = day.id;
+  const dateStr = day.date ? new Date(day.date+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '';
+  const firstTrain = (day.trains||[])[0];
+  const trainBadge = firstTrain?.from ? `${firstTrain.from} → ${firstTrain.to||'?'}${day.trains.length>1?' …':''}` : '';
+
+  content.innerHTML = `
+    <div class="day-date-header">
+      <div class="day-date-display">${esc(day.label)}</div>
+      ${dateStr ? `<div class="day-date-str">${dateStr}</div>` : ''}
+    </div>
+
+    <!-- TRAINS -->
+    <div class="section" id="sec-train">
+      <div class="section-header" onclick="toggleSection('train')">
+        <div class="section-left">
+          <span class="section-icon">🚆</span>
+          <span class="section-title">Trains</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${trainBadge ? `<span class="section-badge">${esc(trainBadge)}</span>` : ''}
+          <span class="section-toggle" id="tog-train">▼</span>
+        </div>
+      </div>
+      <div class="section-body" id="body-train">
+        <div id="trains-container">${renderTrains(day.trains||[])}</div>
+        <button id="add-train-btn-row" class="add-train-btn" onclick="addTrain()">+ Ajouter un train</button>
+      </div>
+    </div>
+
+    <!-- HOTEL -->
+    <div class="section" id="sec-hotel">
+      <div class="section-header" onclick="toggleSection('hotel')">
+        <div class="section-left">
+          <span class="section-icon">🏨</span>
+          <span class="section-title">Hôtel</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${day.hotel?.nom ? `<span class="section-badge">${esc(day.hotel.nom)}</span>` : ''}
+          <span class="section-toggle" id="tog-hotel">▼</span>
+        </div>
+      </div>
+      <div class="section-body" id="body-hotel">
+        <div class="hotel-fields">
+          <div>
+            <label class="field-label">Nom de l'hôtel</label>
+            <input class="field-input" id="h-nom" placeholder="ex: Hôtel Céleste" value="${esc(day.hotel?.nom||'')}" oninput="updateHotel()" />
+          </div>
+          <div>
+            <label class="field-label">Adresse</label>
+            <input class="field-input" id="h-adresse" placeholder="Adresse" value="${esc(day.hotel?.adresse||'')}" oninput="updateHotel()" />
+          </div>
+          <div>
+            <label class="field-label">Téléphone</label>
+            <input type="tel" class="field-input" id="h-tel" placeholder="+33 1 00 00 00 00" value="${esc(day.hotel?.tel||'')}" oninput="updateHotel()" />
+          </div>
+          <div class="field-row">
+            <div>
+              <label class="field-label">Check-in</label>
+              <input type="time" class="field-input" id="h-checkin" value="${esc(day.hotel?.checkin||'')}" oninput="updateHotel()" />
+            </div>
+            <div>
+              <label class="field-label">Check-out</label>
+              <input type="time" class="field-input" id="h-checkout" value="${esc(day.hotel?.checkout||'')}" oninput="updateHotel()" />
+            </div>
+          </div>
+          <div>
+            <label class="field-label">Étoiles</label>
+            <div class="stars-row" id="stars-row">
+              ${[1,2,3,4,5].map(n=>`<button class="star-btn${(day.hotel?.stars||0)>=n?' on':''}" onclick="setStars(${n})">⭐</button>`).join('')}
+            </div>
+          </div>
+          <div>
+            <label class="field-label">Notes</label>
+            <textarea class="field-textarea" id="h-note" placeholder="Confirmation, parking, petit-déjeuner…" oninput="updateHotel()">${esc(day.hotel?.note||'')}</textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TODOS -->
+    <div class="section" id="sec-todos">
+      <div class="section-header" onclick="toggleSection('todos')">
+        <div class="section-left">
+          <span class="section-icon">📋</span>
+          <span class="section-title">Choses à faire</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="section-badge">${(day.todos||[]).filter(t=>t.done).length} / ${(day.todos||[]).length}</span>
+          <span class="section-toggle" id="tog-todos">▼</span>
+        </div>
+      </div>
+      <div class="section-body" id="body-todos">
+        <div class="todo-list" id="todo-list">${renderTodos(day.todos||[])}</div>
+        <div class="todo-add-row">
+          <input class="todo-add-input" id="todo-input" placeholder="Ajouter une activité…" onkeydown="if(event.key==='Enter')addTodo()" />
+          <button class="todo-add-btn" onclick="addTodo()">+</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTES DU JOUR -->
+    <div class="section" id="sec-notes">
+      <div class="section-header" onclick="toggleSection('notes')">
+        <div class="section-left">
+          <span class="section-icon">📝</span>
+          <span class="section-title">Notes du jour</span>
+        </div>
+        <span class="section-toggle" id="tog-notes">▼</span>
+      </div>
+      <div class="section-body" id="body-notes">
+        <textarea class="field-textarea" id="day-notes" placeholder="Impressions, souvenirs, idées…" style="min-height:100px" oninput="updateNotes()">${esc(day.notes||'')}</textarea>
+      </div>
+    </div>
+
+    <div id="delete-confirm" style="display:none;margin-top:4px;background:#fff5f2;border:1px solid #f0c0b0;border-radius:10px;padding:14px 16px;text-align:center">
+      <div style="font-size:14px;margin-bottom:12px;color:var(--rust)">Supprimer ce jour définitivement ?</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="document.getElementById('delete-confirm').style.display='none'" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:white;font-family:inherit;font-size:14px;cursor:pointer">Annuler</button>
+        <button onclick="confirmDeleteDay(${day.id})" style="flex:1;padding:10px;border-radius:8px;border:none;background:var(--rust);color:white;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer">Supprimer</button>
+      </div>
+    </div>
+    <button class="delete-day-btn" onclick="document.getElementById('delete-confirm').style.display='block'">🗑 Supprimer ce jour</button>
+  `;
+}
+
+// ── SECTION TOGGLE ──
+const collapsed = {};
+function toggleSection(name) {
+  collapsed[name] = !collapsed[name];
+  const body = document.getElementById('body-'+name);
+  const tog = document.getElementById('tog-'+name);
+  if (body) body.classList.toggle('collapsed', !!collapsed[name]);
+  if (tog) tog.textContent = collapsed[name] ? '▶' : '▼';
+}
+
+// ── HOTEL ──
+function updateHotel() {
+  const day = getDay(activeDay); if (!day) return;
+  const stars = day.hotel?.stars || 0;
+  day.hotel = { nom: v('h-nom'), adresse: v('h-adresse'), tel: v('h-tel'), checkin: v('h-checkin'), checkout: v('h-checkout'), stars, note: v('h-note') };
+  save();
+  const badge = document.querySelector('#sec-hotel .section-badge');
+  if (badge && day.hotel.nom) badge.textContent = day.hotel.nom;
+}
+
+function setStars(n) {
+  const day = getDay(activeDay); if (!day) return;
+  if (!day.hotel) day.hotel = {};
+  day.hotel.stars = n; save();
+  document.querySelectorAll('.star-btn').forEach((b,i) => b.classList.toggle('on', i<n));
+}
+
+// ── TODOS ──
+function addTodo() {
+  const inp = document.getElementById('todo-input');
+  const text = inp.value.trim(); if (!text) return;
+  const day = getDay(activeDay); if (!day) return;
+  if (!day.todos) day.todos = [];
+  day.todos.push({ id: Date.now(), text, done: false });
+  save(); inp.value = '';
+  document.getElementById('todo-list').innerHTML = renderTodos(day.todos);
+  updateTodoBadge();
+}
+function toggleTodo(id) {
+  const day = getDay(activeDay); if (!day) return;
+  const t = day.todos?.find(x => x.id === id); if (!t) return;
+  t.done = !t.done; save();
+  document.getElementById('todo-list').innerHTML = renderTodos(day.todos);
+  updateTodoBadge();
+}
+function deleteTodo(id) {
+  const day = getDay(activeDay); if (!day) return;
+  day.todos = day.todos?.filter(x => x.id !== id) || [];
+  save();
+  document.getElementById('todo-list').innerHTML = renderTodos(day.todos);
+  updateTodoBadge();
+}
+function updateTodoBadge() {
+  const day = getDay(activeDay); if (!day) return;
+  const badge = document.querySelector('#sec-todos .section-badge');
+  if (badge) badge.textContent = `${day.todos?.filter(t=>t.done).length||0} / ${day.todos?.length||0}`;
+}
+
+// ── NOTES ──
+function updateNotes() {
+  const day = getDay(activeDay); if (!day) return;
+  day.notes = v('day-notes'); save();
+}
+
+// ── ADD / DELETE DAY ──
+function openAddDay() {
+  document.getElementById('m-label').value = `Jour ${days.length+1}`;
+  document.getElementById('m-date').value = '';
+  document.getElementById('overlay').classList.add('open');
+}
+function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+function maybeCloseModal(e) { if(e.target===document.getElementById('overlay')) closeModal(); }
+function addDay() {
+  const label = document.getElementById('m-label').value.trim() || `Jour ${days.length+1}`;
+  const date = document.getElementById('m-date').value;
+  const newDay = { id: Date.now(), label, date, trains: [], hotel: {}, todos: [], notes: '' };
+  days.push(newDay); activeDay = newDay.id;
+  save(); closeModal(); render();
+}
+function confirmDeleteDay(id) {
+  days = days.filter(d => d.id !== id);
+  activeDay = days[0]?.id || null;
+  save(); render();
+}
+
+// ── EXPORT ──
+function openExport() {
+  document.getElementById('export-text').value = localStorage.getItem('vj_days') || '[]';
+  document.getElementById('export-box').classList.add('open');
+}
+function closeExport() { document.getElementById('export-box').classList.remove('open'); }
+function selectExportText() { const ta = document.getElementById('export-text'); ta.focus(); ta.select(); }
+
+// ── UTILS ──
+function v(id) { return document.getElementById(id)?.value || ''; }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+render();
+</script>
+</body>
+</html>
