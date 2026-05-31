@@ -167,6 +167,9 @@
 // ── DONNÉES PAR DÉFAUT (tes données récupérées) ──
 const DEFAULT_DATA = [{"id":1780217376885,"label":"Jour 1","date":"2026-06-27","trains":[{"id":1,"from":"Gare de Lyon","to":"Torino Porta Rosa","depart":"14:48","arrivee":"20:23","numero":"TGV Inouï 9255","note":"Voiture 13 - Places 334  335"}],"hotel":{"nom":"Hôtel Hilton Torino Centro","adresse":"Via dell'Arcivescovado, 18, Turin","tel":"+39011043550","checkin":"15:00","checkout":"12:00","stars":0,"note":"King délice room"},"todos":[],"notes":"1 nuit hotel"},{"id":1780220382720,"label":"Jour 2","date":"2026-06-28","trains":[{"id":2,"from":"Torino Porta Nova","to":"Genova Piazza Principe","depart":"15:15","arrivee":"17:00","numero":"Frecciarossa 8624","note":"Voiture 1 - Places 7D 8D"}],"hotel":{"nom":"Grand Hôtel Savoia Genova","adresse":"Via Arsenale du Terra, 5, Genova","tel":"+3301027721","checkin":"14:00","checkout":"12:00","stars":0,"note":"King Supérior room"},"todos":[]},{"id":1780220861093,"label":"Jour 3","date":"2026-06-29","trains":[{"id":3,"from":"Genova Piazza Principe","to":"La Spezia Centrale","depart":"18:35","arrivee":"19:46","numero":"Frecciagento 8591","note":"Voiture 2 - Places 9A 10A"}],"hotel":{"nom":"The Poet Hotel","adresse":"Via Roma, 139, la Spezia","tel":"+390187714655","checkin":"14:30","checkout":"11:30","stars":0,"note":"Suite junior (Deluxe famille)"},"todos":[]}];
 
+// Force sync: always overwrite localStorage with latest data
+localStorage.setItem('vj_days', JSON.stringify(DEFAULT_DATA));
+
 // ── STATE ──
 // Migrate old single-train format to trains array
 function migrateDay(d) {
