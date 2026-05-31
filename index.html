@@ -344,44 +344,55 @@ function render() {
         </div>
       </div>
       <div class="section-body" id="body-hotel">
-        <div class="hotel-fields">
-          <div>
-            <label class="field-label">Nom de l'hôtel</label>
-            <input class="field-input" id="h-nom" placeholder="ex: Hôtel Céleste" value="${esc(day.hotel?.nom||'')}" oninput="updateHotel()" />
-          </div>
-          <div>
-            <label class="field-label">Adresse</label>
-            <input class="field-input" id="h-adresse" placeholder="Adresse" value="${esc(day.hotel?.adresse||'')}" oninput="updateHotel()" />
-          </div>
-          <div>
-            <label class="field-label">Téléphone</label>
-            <input type="tel" class="field-input" id="h-tel" placeholder="+33 1 00 00 00 00" value="${esc(day.hotel?.tel||'')}" oninput="updateHotel()" />
-          </div>
-          <div class="field-row">
-            <div>
-              <label class="field-label">Check-in</label>
-              <input type="time" class="field-input" id="h-checkin" value="${esc(day.hotel?.checkin||'')}" oninput="updateHotel()" />
+        <div id="hotel-container">
+          ${day.hotel?.nom ? `
+          <div class="train-card">
+            <div class="train-card-header">
+              <span class="train-card-title">🏨 Hébergement</span>
+              <button class="train-del-btn" onclick="deleteHotel()">✕</button>
             </div>
-            <div>
-              <label class="field-label">Check-out</label>
-              <input type="time" class="field-input" id="h-checkout" value="${esc(day.hotel?.checkout||'')}" oninput="updateHotel()" />
+            <div class="hotel-fields">
+              <div>
+                <label class="field-label">Nom de l'hôtel</label>
+                <input class="field-input" id="h-nom" placeholder="ex: Hôtel Céleste" value="${esc(day.hotel?.nom||'')}" oninput="updateHotel()" />
+              </div>
+              <div>
+                <label class="field-label">Adresse</label>
+                <input class="field-input" id="h-adresse" placeholder="Adresse" value="${esc(day.hotel?.adresse||'')}" oninput="updateHotel()" />
+              </div>
+              <div>
+                <label class="field-label">Téléphone</label>
+                <input type="tel" class="field-input" id="h-tel" placeholder="+33 1 00 00 00 00" value="${esc(day.hotel?.tel||'')}" oninput="updateHotel()" />
+              </div>
+              <div class="field-row">
+                <div>
+                  <label class="field-label">Check-in</label>
+                  <input type="time" class="field-input" id="h-checkin" value="${esc(day.hotel?.checkin||'')}" oninput="updateHotel()" />
+                </div>
+                <div>
+                  <label class="field-label">Check-out</label>
+                  <input type="time" class="field-input" id="h-checkout" value="${esc(day.hotel?.checkout||'')}" oninput="updateHotel()" />
+                </div>
+              </div>
+              <div>
+                <label class="field-label">Étoiles</label>
+                <div class="stars-row" id="stars-row">
+                  ${[1,2,3,4,5].map(n=>`<button class="star-btn${(day.hotel?.stars||0)>=n?' on':''}" onclick="setStars(${n})">⭐</button>`).join('')}
+                </div>
+              </div>
+              <div>
+                <label class="field-label">Notes</label>
+                <textarea class="field-textarea" id="h-note" placeholder="Confirmation, parking, petit-déjeuner…" oninput="updateHotel()">${esc(day.hotel?.note||'')}</textarea>
+              </div>
             </div>
           </div>
-          <div>
-            <label class="field-label">Étoiles</label>
-            <div class="stars-row" id="stars-row">
-              ${[1,2,3,4,5].map(n=>`<button class="star-btn${(day.hotel?.stars||0)>=n?' on':''}" onclick="setStars(${n})">⭐</button>`).join('')}
-            </div>
-          </div>
-          <div>
-            <label class="field-label">Notes</label>
-            <textarea class="field-textarea" id="h-note" placeholder="Confirmation, parking, petit-déjeuner…" oninput="updateHotel()">${esc(day.hotel?.note||'')}</textarea>
-          </div>
+          ` : `<div style="font-size:13px;color:var(--muted);text-align:center;padding:8px 0 4px">Aucun hôtel pour ce jour</div>`}
         </div>
+        ${!day.hotel?.nom ? `<button class="add-train-btn" onclick="addHotel()">+ Ajouter un hôtel</button>` : ''}
       </div>
     </div>
 
-    <!-- TODOS -->
+        <!-- TODOS -->
     <div class="section" id="sec-todos">
       <div class="section-header" onclick="toggleSection('todos')">
         <div class="section-left">
@@ -438,6 +449,56 @@ function toggleSection(name) {
 }
 
 // ── HOTEL ──
+function addHotel() {
+  const day = getDay(activeDay); if (!day) return;
+  day.hotel = { nom: '', adresse: '', tel: '', checkin: '', checkout: '', stars: 0, note: '' };
+  save();
+  // Re-render just the hotel container
+  const hotelContainer = document.getElementById('hotel-container');
+  if (hotelContainer) {
+    hotelContainer.innerHTML = `
+      <div class="train-card">
+        <div class="train-card-header">
+          <span class="train-card-title">🏨 Hébergement</span>
+          <button class="train-del-btn" onclick="deleteHotel()">✕</button>
+        </div>
+        <div class="hotel-fields">
+          <div><label class="field-label">Nom de l'hôtel</label><input class="field-input" id="h-nom" placeholder="ex: Hôtel Céleste" value="" oninput="updateHotel()" /></div>
+          <div><label class="field-label">Adresse</label><input class="field-input" id="h-adresse" placeholder="Adresse" value="" oninput="updateHotel()" /></div>
+          <div><label class="field-label">Téléphone</label><input type="tel" class="field-input" id="h-tel" placeholder="+33 1 00 00 00 00" value="" oninput="updateHotel()" /></div>
+          <div class="field-row">
+            <div><label class="field-label">Check-in</label><input type="time" class="field-input" id="h-checkin" value="" oninput="updateHotel()" /></div>
+            <div><label class="field-label">Check-out</label><input type="time" class="field-input" id="h-checkout" value="" oninput="updateHotel()" /></div>
+          </div>
+          <div><label class="field-label">Étoiles</label><div class="stars-row" id="stars-row">${[1,2,3,4,5].map(n=>`<button class="star-btn" onclick="setStars(${n})">⭐</button>`).join('')}</div></div>
+          <div><label class="field-label">Notes</label><textarea class="field-textarea" id="h-note" placeholder="Confirmation, parking, petit-déjeuner…" oninput="updateHotel()"></textarea></div>
+        </div>
+      </div>`;
+    // Remove the add button
+    const addBtn = hotelContainer.nextElementSibling;
+    if (addBtn && addBtn.classList.contains('add-train-btn')) addBtn.remove();
+    document.getElementById('h-nom').focus();
+  }
+}
+
+function deleteHotel() {
+  const day = getDay(activeDay); if (!day) return;
+  day.hotel = {};
+  save();
+  const hotelContainer = document.getElementById('hotel-container');
+  if (hotelContainer) {
+    hotelContainer.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:8px 0 4px">Aucun hôtel pour ce jour</div>';
+    // Add the add button back
+    const btn = document.createElement('button');
+    btn.className = 'add-train-btn';
+    btn.textContent = '+ Ajouter un hôtel';
+    btn.onclick = addHotel;
+    hotelContainer.after(btn);
+  }
+  const badge = document.querySelector('#sec-hotel .section-badge');
+  if (badge) badge.textContent = '';
+}
+
 function updateHotel() {
   const day = getDay(activeDay); if (!day) return;
   const stars = day.hotel?.stars || 0;
