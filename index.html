@@ -231,11 +231,11 @@ function renderTrains(trains) {
         <div class="field-row">
           <div>
             <label class="field-label">Heure départ</label>
-            <input type="text" inputmode="numeric" placeholder="14:48" class="field-input" value="${esc(t.depart||'')}" oninput="updateTrainField('${t.id}','depart',this.value)" />
+            <input type="text" inputmode="text" placeholder="14:48" class="field-input" value="${esc(t.depart||'')}" oninput="updateTrainField('${t.id}','depart',this.value)" />
           </div>
           <div>
             <label class="field-label">Heure arrivée</label>
-            <input type="text" inputmode="numeric" placeholder="20:23" class="field-input" value="${esc(t.arrivee||'')}" oninput="updateTrainField('${t.id}','arrivee',this.value)" />
+            <input type="text" inputmode="text" placeholder="20:23" class="field-input" value="${esc(t.arrivee||'')}" oninput="updateTrainField('${t.id}','arrivee',this.value)" />
           </div>
         </div>
         <div>
@@ -358,11 +358,11 @@ function render() {
           <div class="field-row">
             <div>
               <label class="field-label">Check-in</label>
-              <input type="text" inputmode="numeric" placeholder="15:00" class="field-input" id="h-checkin" value="${esc(day.hotel?.checkin||'')}" oninput="updateHotel()" />
+              <input type="text" inputmode="text" placeholder="15:00" class="field-input" id="h-checkin" value="${esc(day.hotel?.checkin||'')}" oninput="updateHotel()" />
             </div>
             <div>
               <label class="field-label">Check-out</label>
-              <input type="text" inputmode="numeric" placeholder="12:00" class="field-input" id="h-checkout" value="${esc(day.hotel?.checkout||'')}" oninput="updateHotel()" />
+              <input type="text" inputmode="text" placeholder="12:00" class="field-input" id="h-checkout" value="${esc(day.hotel?.checkout||'')}" oninput="updateHotel()" />
             </div>
           </div>
           <div>
