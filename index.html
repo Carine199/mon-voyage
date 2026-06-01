@@ -131,6 +131,7 @@
       <button class="header-btn" onclick="openAddDay()">+ Jour</button>
     </div>
   </div>
+  <div style="font-size:11px;text-align:right;padding:2px 4px 6px;min-height:16px" id="sync-status"></div>
   <div class="days-nav" id="days-nav"></div>
 </header>
 
@@ -165,12 +166,28 @@
   </div>
 </div>
 
-<script>
+<script type="module">
+// ── FIREBASE ──
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDXpGjJyC1nbP7VQ85zOnaAGIQJ4LTuteI",
+  authDomain: "mon-voyage-italie-2026.firebaseapp.com",
+  projectId: "mon-voyage-italie-2026",
+  storageBucket: "mon-voyage-italie-2026.firebasestorage.app",
+  messagingSenderId: "744301680109",
+  appId: "1:744301680109:web:fba953406ae09f88f803e4"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
+const VOYAGE_DOC = doc(db, "voyage", "italie2026");
+
 // ── DONNÉES PAR DÉFAUT (tes données récupérées) ──
 const DEFAULT_DATA = [{"id":1780217376885,"label":"Jour 1","date":"2026-06-27","trains":[{"id":1,"from":"Gare de Lyon","to":"Torino Porta Rosa","depart":"14:48","arrivee":"20:23","numero":"TGV Inouï 9255","note":"Voiture 13 - Places 334  335"}],"hotel":{"nom":"Hôtel Hilton Torino Centro","adresse":"Via dell'Arcivescovado, 18, Turin","tel":"+39011043550","checkin":"15:00","checkout":"12:00","stars":0,"note":"King délice room"},"todos":[],"notes":"1 nuit hotel"},{"id":1780220382720,"label":"Jour 2","date":"2026-06-28","trains":[{"id":2,"from":"Torino Porta Nova","to":"Genova Piazza Principe","depart":"15:15","arrivee":"17:00","numero":"Frecciarossa 8624","note":"Voiture 1 - Places 7D 8D"}],"hotel":{"nom":"Grand Hôtel Savoia Genova","adresse":"Via Arsenale du Terra, 5, Genova","tel":"+3301027721","checkin":"14:00","checkout":"12:00","stars":0,"note":"King Supérior room"},"todos":[],"notes":"10:00 visite Tempio du Ellesiya (billets)"},{"id":1780220861093,"label":"Jour 3","date":"2026-06-29","trains":[{"id":3,"from":"Genova Piazza Principe","to":"La Spezia Centrale","depart":"18:35","arrivee":"19:46","numero":"Frecciagento 8591","note":"Voiture 2 - Places 9A 10A"}],"hotel":{"nom":"The Poet Hotel","adresse":"Via Roma, 139, la Spezia","tel":"+390187714655","checkin":"14:30","checkout":"11:30","stars":0,"note":"Suite junior (Deluxe famille)"},"todos":[]},{"id":1780245606786,"label":"Jour 4","date":"2026-06-30","trains":[{"id":1780245647376,"from":"La Spezia Centrale","to":"Pisa Centrale","depart":"09:28","arrivee":"10:25","numero":"Intercity 651","note":"Voiture 1 - Places 10A 11A"},{"id":1780245726894,"from":"Pisa Centrale","to":"La Spezia Centrale","depart":"21:23","arrivee":"22:14","numero":"Frecciabianca 8630","note":"Voiture 2 - Places 9A 10A"}],"hotel":{},"todos":[],"notes":"Journée à Pise\n18:15 visite de la tour de Pise (billets)"},{"id":1780245904996,"label":"Jour 5","date":"2026-07-01","trains":[],"hotel":{},"todos":[],"notes":""},{"id":1780245931683,"label":"Jour 6","date":"2026-07-02","trains":[],"hotel":{},"todos":[],"notes":""},{"id":1780247145533,"label":"Jour 7","date":"2026-07-03","trains":[{"id":1780247149885,"from":"La Spezia Centrale","to":"Torino Porta Nova","depart":"15:00","arrivee":"18:45","numero":"Intercity 510","note":"Voiture 2 - Places 15C 15D"}],"hotel":{"nom":"Hôtel Hilton Torino Centro","adresse":"","tel":"","checkin":"15:00","checkout":"12:00","stars":0,"note":""},"todos":[],"notes":""},{"id":1780247298865,"label":"Jour 8","date":"2026-07-04","trains":[{"id":1780247301416,"from":"Torino Porta Susa","to":"Paris Gare de Lyon","depart":"17:41","arrivee":"23:14","numero":"TGV inoui 9250","note":"Voiture 13 - Places 334 335"}],"hotel":{},"todos":[],"notes":""}];
 
 // ── STATE ──
-// Migrate old single-train format to trains array
 function migrateDay(d) {
   if (!d.trains) {
     d.trains = d.train && d.train.from ? [{ id: Date.now() + Math.random(), ...d.train }] : [];
@@ -179,22 +196,62 @@ function migrateDay(d) {
   return d;
 }
 
-let stored = localStorage.getItem('vj_days');
-let days;
-if (stored) {
-  try {
-    const parsed = JSON.parse(stored).map(migrateDay);
-    // If stored data has fewer days than default, it's probably first load — use default
-    days = parsed.length > 0 ? parsed : DEFAULT_DATA;
-  } catch(e) { days = DEFAULT_DATA; }
-} else {
-  days = DEFAULT_DATA.map(migrateDay);
-  localStorage.setItem('vj_days', JSON.stringify(days));
-}
+let days = DEFAULT_DATA.map(migrateDay);
 let activeDay = days[0]?.id || null;
+let saveTimeout = null;
+let ignoreNextSnapshot = false;
 
-function save() { localStorage.setItem('vj_days', JSON.stringify(days)); }
+function showSyncStatus(status) {
+  let el = document.getElementById('sync-status');
+  if (!el) return;
+  if (status === 'saving') { el.textContent = '⏳ Sync…'; el.style.color = '#b8882a'; }
+  else if (status === 'saved') { el.textContent = '✓ Synchronisé'; el.style.color = '#5a7a5a'; setTimeout(()=>{ el.textContent=''; }, 2000); }
+  else if (status === 'error') { el.textContent = '⚠ Erreur sync'; el.style.color = '#c0512a'; }
+}
+
+function save() {
+  showSyncStatus('saving');
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(async () => {
+    try {
+      ignoreNextSnapshot = true;
+      await setDoc(VOYAGE_DOC, { days: JSON.stringify(days) });
+      showSyncStatus('saved');
+    } catch(e) {
+      console.error('Firebase save error:', e);
+      showSyncStatus('error');
+    }
+  }, 1000);
+}
+
 function getDay(id) { return days.find(d => d.id === id); }
+
+async function initFirebase() {
+  try {
+    const snap = await getDoc(VOYAGE_DOC);
+    if (snap.exists() && snap.data().days) {
+      const remote = JSON.parse(snap.data().days).map(migrateDay);
+      if (remote.length > 0) { days = remote; activeDay = days[0].id; }
+    } else {
+      await setDoc(VOYAGE_DOC, { days: JSON.stringify(days) });
+    }
+  } catch(e) { console.error('Firebase init error:', e); }
+
+  render();
+
+  onSnapshot(VOYAGE_DOC, (snap) => {
+    if (ignoreNextSnapshot) { ignoreNextSnapshot = false; return; }
+    if (snap.exists() && snap.data().days) {
+      const remote = JSON.parse(snap.data().days).map(migrateDay);
+      if (remote.length > 0) {
+        days = remote;
+        if (!getDay(activeDay)) activeDay = days[0].id;
+        render();
+        showSyncStatus('saved');
+      }
+    }
+  });
+}
 
 // ── NAV ──
 function renderNav() {
@@ -613,7 +670,7 @@ function selectExportText() { const ta = document.getElementById('export-text');
 function v(id) { return document.getElementById(id)?.value || ''; }
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-render();
+initFirebase();
 </script>
 </body>
 </html>
