@@ -532,6 +532,7 @@ function toggleSection(name) {
   if (body) body.classList.toggle('collapsed', !!collapsed[name]);
   if (tog) tog.textContent = collapsed[name] ? '▶' : '▼';
 }
+window.toggleSection = toggleSection;
 
 // ── HOTEL ──
 function addHotel() {
@@ -669,6 +670,16 @@ function selectExportText() { const ta = document.getElementById('export-text');
 // ── UTILS ──
 function v(id) { return document.getElementById(id)?.value || ''; }
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── EXPOSE AU HTML (requis pour type="module") ──
+Object.assign(window, {
+  toggleSection, addTrain, deleteTrain, updateTrainField,
+  addHotel, deleteHotel, updateHotel, setStars,
+  addTodo, deleteTodo, toggleTodo,
+  updateDayField, updateNotes,
+  openAddDay, addDay, closeModal, maybeCloseModal, confirmDeleteDay,
+  openExport, closeExport, selectExportText
+});
 
 initFirebase();
 </script>
