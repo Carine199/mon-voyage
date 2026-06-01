@@ -120,6 +120,19 @@
 </head>
 <body>
 
+<!-- ÉCRAN DE CONNEXION -->
+<div id="login-screen" style="display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#8b2e2e;padding:40px 20px;text-align:center">
+  <div style="font-size:60px;margin-bottom:16px">🚆</div>
+  <div style="font-family:'Playfair Display',serif;font-size:28px;color:#e8c86a;margin-bottom:8px">Mon Voyage</div>
+  <div style="font-size:14px;color:#f0c8c8;margin-bottom:48px;font-style:italic">Journal de bord à deux</div>
+  <button onclick="signInWithGoogle()" style="display:flex;align-items:center;gap:12px;background:white;border:none;border-radius:12px;padding:14px 28px;font-size:16px;font-weight:500;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.3)">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="24" height="24" />
+    Se connecter avec Google
+  </button>
+  <div id="login-error" style="margin-top:20px;color:#ffcdd2;font-size:13px"></div>
+</div>
+
+<div id="app-wrapper" style="display:none">
 <header>
   <div class="header-top">
     <div>
@@ -129,9 +142,10 @@
     <div style="display:flex;gap:8px">
       <button class="header-btn" style="background:transparent;color:var(--gold-light);border:1px solid #c06060;font-size:12px;padding:7px 12px" onclick="openExport()">⬆ Export</button>
       <button class="header-btn" onclick="openAddDay()">+ Jour</button>
+      <button class="header-btn" style="background:transparent;color:#f0c8c8;border:1px solid #c06060;font-size:11px;padding:7px 10px" onclick="signOutUser()" title="Se déconnecter">⎋</button>
     </div>
   </div>
-  <div style="font-size:11px;text-align:right;padding:2px 4px 6px;min-height:16px" id="sync-status"></div>
+  <div style="font-size:11px;padding:2px 4px 6px;min-height:16px;display:flex;justify-content:space-between"><span id="user-email" style="color:#f0c8c8;opacity:0.7"></span><span id="sync-status"></span></div>
   <div class="days-nav" id="days-nav"></div>
 </header>
 
@@ -170,6 +184,7 @@
 // ── FIREBASE ──
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDXpGjJyC1nbP7VQ85zOnaAGIQJ4LTuteI",
@@ -182,7 +197,9 @@ const firebaseConfig = {
 
 const fbApp = initializeApp(firebaseConfig);
 const db = getFirestore(fbApp);
+const auth = getAuth(fbApp);
 const VOYAGE_DOC = doc(db, "voyage", "italie2026");
+const ALLOWED_EMAILS = ["carineb199@gmail.com", "guill.ber69@gmail.com"];
 
 // ── DONNÉES PAR DÉFAUT (tes données récupérées) ──
 const DEFAULT_DATA = [{"id":1780217376885,"label":"Jour 1","date":"2026-06-27","trains":[{"id":1,"from":"Gare de Lyon","to":"Torino Porta Rosa","depart":"14:48","arrivee":"20:23","numero":"TGV Inouï 9255","note":"Voiture 13 - Places 334  335"}],"hotel":{"nom":"Hôtel Hilton Torino Centro","adresse":"Via dell'Arcivescovado, 18, Turin","tel":"+39011043550","checkin":"15:00","checkout":"12:00","stars":0,"note":"King délice room"},"todos":[],"notes":"1 nuit hotel"},{"id":1780220382720,"label":"Jour 2","date":"2026-06-28","trains":[{"id":2,"from":"Torino Porta Nova","to":"Genova Piazza Principe","depart":"15:15","arrivee":"17:00","numero":"Frecciarossa 8624","note":"Voiture 1 - Places 7D 8D"}],"hotel":{"nom":"Grand Hôtel Savoia Genova","adresse":"Via Arsenale du Terra, 5, Genova","tel":"+3301027721","checkin":"14:00","checkout":"12:00","stars":0,"note":"King Supérior room"},"todos":[],"notes":"10:00 visite Tempio du Ellesiya (billets)"},{"id":1780220861093,"label":"Jour 3","date":"2026-06-29","trains":[{"id":3,"from":"Genova Piazza Principe","to":"La Spezia Centrale","depart":"18:35","arrivee":"19:46","numero":"Frecciagento 8591","note":"Voiture 2 - Places 9A 10A"}],"hotel":{"nom":"The Poet Hotel","adresse":"Via Roma, 139, la Spezia","tel":"+390187714655","checkin":"14:30","checkout":"11:30","stars":0,"note":"Suite junior (Deluxe famille)"},"todos":[]},{"id":1780245606786,"label":"Jour 4","date":"2026-06-30","trains":[{"id":1780245647376,"from":"La Spezia Centrale","to":"Pisa Centrale","depart":"09:28","arrivee":"10:25","numero":"Intercity 651","note":"Voiture 1 - Places 10A 11A"},{"id":1780245726894,"from":"Pisa Centrale","to":"La Spezia Centrale","depart":"21:23","arrivee":"22:14","numero":"Frecciabianca 8630","note":"Voiture 2 - Places 9A 10A"}],"hotel":{},"todos":[],"notes":"Journée à Pise\n18:15 visite de la tour de Pise (billets)"},{"id":1780245904996,"label":"Jour 5","date":"2026-07-01","trains":[],"hotel":{},"todos":[],"notes":""},{"id":1780245931683,"label":"Jour 6","date":"2026-07-02","trains":[],"hotel":{},"todos":[],"notes":""},{"id":1780247145533,"label":"Jour 7","date":"2026-07-03","trains":[{"id":1780247149885,"from":"La Spezia Centrale","to":"Torino Porta Nova","depart":"15:00","arrivee":"18:45","numero":"Intercity 510","note":"Voiture 2 - Places 15C 15D"}],"hotel":{"nom":"Hôtel Hilton Torino Centro","adresse":"","tel":"","checkin":"15:00","checkout":"12:00","stars":0,"note":""},"todos":[],"notes":""},{"id":1780247298865,"label":"Jour 8","date":"2026-07-04","trains":[{"id":1780247301416,"from":"Torino Porta Susa","to":"Paris Gare de Lyon","depart":"17:41","arrivee":"23:14","numero":"TGV inoui 9250","note":"Voiture 13 - Places 334 335"}],"hotel":{},"todos":[],"notes":""}];
@@ -226,7 +243,7 @@ function save() {
 
 function getDay(id) { return days.find(d => d.id === id); }
 
-async function initFirebase() {
+async function loadData() {
   try {
     const snap = await getDoc(VOYAGE_DOC);
     if (snap.exists() && snap.data().days) {
@@ -235,7 +252,7 @@ async function initFirebase() {
     } else {
       await setDoc(VOYAGE_DOC, { days: JSON.stringify(days) });
     }
-  } catch(e) { console.error('Firebase init error:', e); }
+  } catch(e) { console.error('Firebase load error:', e); }
 
   render();
 
@@ -252,6 +269,47 @@ async function initFirebase() {
     }
   });
 }
+
+function showLoginScreen(errorMsg) {
+  document.getElementById('app-wrapper').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  if (errorMsg) document.getElementById('login-error').textContent = errorMsg;
+}
+
+function hideLoginScreen() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-wrapper').style.display = 'block';
+}
+
+async function signInWithGoogle() {
+  try {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    const email = result.user.email;
+    if (!ALLOWED_EMAILS.includes(email)) {
+      await signOut(auth);
+      showLoginScreen("Accès refusé pour " + email);
+    }
+  } catch(e) {
+    console.error('Login error:', e);
+    showLoginScreen("Erreur de connexion, réessayez.");
+  }
+}
+
+function initFirebase() {
+  onAuthStateChanged(auth, async (user) => {
+    if (user && ALLOWED_EMAILS.includes(user.email)) {
+      document.getElementById('user-email').textContent = user.email.split('@')[0];
+      hideLoginScreen();
+      await loadData();
+    } else {
+      showLoginScreen();
+    }
+  });
+}
+
+window.signInWithGoogle = signInWithGoogle;
+window.signOutUser = () => signOut(auth);
 
 // ── NAV ──
 function renderNav() {
@@ -683,5 +741,6 @@ Object.assign(window, {
 
 initFirebase();
 </script>
+</div><!-- /app-wrapper -->
 </body>
 </html>
