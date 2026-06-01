@@ -167,7 +167,7 @@
 
 <script>
 // ── DONNÉES PAR DÉFAUT (tes données récupérées) ──
-const DEFAULT_DATA = [{"id":1780217376885,"label":"Jour 1","date":"2026-06-27","trains":[{"id":1,"from":"Gare de Lyon","to":"Torino Porta Rosa","depart":"14:48","arrivee":"20:23","numero":"TGV Inouï 9255","note":"Voiture 13 - Places 334  335"}],"hotel":{"nom":"Hôtel Hilton Torino Centro","adresse":"Via dell'Arcivescovado, 18, Turin","tel":"+39011043550","checkin":"15:00","checkout":"12:00","stars":0,"note":"King délice room"},"todos":[],"notes":"1 nuit hotel"},{"id":1780220382720,"label":"Jour 2","date":"2026-06-28","trains":[{"id":2,"from":"Torino Porta Nova","to":"Genova Piazza Principe","depart":"15:15","arrivee":"17:00","numero":"Frecciarossa 8624","note":"Voiture 1 - Places 7D 8D"}],"hotel":{"nom":"Grand Hôtel Savoia Genova","adresse":"Via Arsenale du Terra, 5, Genova","tel":"+3301027721","checkin":"14:00","checkout":"12:00","stars":0,"note":"King Supérior room"},"todos":[]},{"id":1780220861093,"label":"Jour 3","date":"2026-06-29","trains":[{"id":3,"from":"Genova Piazza Principe","to":"La Spezia Centrale","depart":"18:35","arrivee":"19:46","numero":"Frecciagento 8591","note":"Voiture 2 - Places 9A 10A"}],"hotel":{"nom":"The Poet Hotel","adresse":"Via Roma, 139, la Spezia","tel":"+390187714655","checkin":"14:30","checkout":"11:30","stars":0,"note":"Suite junior (Deluxe famille)"},"todos":[]},{"id":1780245606786,"label":"Jour 4","date":"2026-06-30","trains":[{"id":1780245647376,"from":"La Spezia Centrale","to":"Pisa Centrale","depart":"09:28","arrivee":"10:25","numero":"Intercity 651","note":"Voiture 1 - Places 10A 11A"},{"id":1780245726894,"from":"Pisa Centrale","to":"La Spezia Centrale","depart":"21:23","arrivee":"22:14","numero":"Frecciabianca 8630","note":"Voiture 2 - Places 9A 10A"}],"hotel":{},"todos":[],"notes":"Journée à Pise"},{"id":1780245904996,"label":"Jour 5","date":"2026-07-01","trains":[],"hotel":{},"todos":[],"notes":""},{"id":1780245931683,"label":"Jour 6","date":"2026-07-02","trains":[],"hotel":{},"todos":[],"notes":""}];
+const DEFAULT_DATA = [{"id":1780217376885,"label":"Jour 1","date":"2026-06-27","trains":[{"id":1,"from":"Gare de Lyon","to":"Torino Porta Rosa","depart":"14:48","arrivee":"20:23","numero":"TGV Inouï 9255","note":"Voiture 13 - Places 334  335"}],"hotel":{"nom":"Hôtel Hilton Torino Centro","adresse":"Via dell'Arcivescovado, 18, Turin","tel":"+39011043550","checkin":"15:00","checkout":"12:00","stars":0,"note":"King délice room"},"todos":[],"notes":"1 nuit hotel"},{"id":1780220382720,"label":"Jour 2","date":"2026-06-28","trains":[{"id":2,"from":"Torino Porta Nova","to":"Genova Piazza Principe","depart":"15:15","arrivee":"17:00","numero":"Frecciarossa 8624","note":"Voiture 1 - Places 7D 8D"}],"hotel":{"nom":"Grand Hôtel Savoia Genova","adresse":"Via Arsenale du Terra, 5, Genova","tel":"+3301027721","checkin":"14:00","checkout":"12:00","stars":0,"note":"King Supérior room"},"todos":[],"notes":"10:00 visite Tempio du Ellesiya (billets)"},{"id":1780220861093,"label":"Jour 3","date":"2026-06-29","trains":[{"id":3,"from":"Genova Piazza Principe","to":"La Spezia Centrale","depart":"18:35","arrivee":"19:46","numero":"Frecciagento 8591","note":"Voiture 2 - Places 9A 10A"}],"hotel":{"nom":"The Poet Hotel","adresse":"Via Roma, 139, la Spezia","tel":"+390187714655","checkin":"14:30","checkout":"11:30","stars":0,"note":"Suite junior (Deluxe famille)"},"todos":[]},{"id":1780245606786,"label":"Jour 4","date":"2026-06-30","trains":[{"id":1780245647376,"from":"La Spezia Centrale","to":"Pisa Centrale","depart":"09:28","arrivee":"10:25","numero":"Intercity 651","note":"Voiture 1 - Places 10A 11A"},{"id":1780245726894,"from":"Pisa Centrale","to":"La Spezia Centrale","depart":"21:23","arrivee":"22:14","numero":"Frecciabianca 8630","note":"Voiture 2 - Places 9A 10A"}],"hotel":{},"todos":[],"notes":"Journée à Pise\n18:15 visite de la tour de Pise (billets)"},{"id":1780245904996,"label":"Jour 5","date":"2026-07-01","trains":[],"hotel":{},"todos":[],"notes":""},{"id":1780245931683,"label":"Jour 6","date":"2026-07-02","trains":[],"hotel":{},"todos":[],"notes":""},{"id":1780247145533,"label":"Jour 7","date":"2026-07-03","trains":[{"id":1780247149885,"from":"La Spezia Centrale","to":"Torino Porta Nova","depart":"15:00","arrivee":"18:45","numero":"Intercity 510","note":"Voiture 2 - Places 15C 15D"}],"hotel":{"nom":"Hôtel Hilton Torino Centro","adresse":"","tel":"","checkin":"15:00","checkout":"12:00","stars":0,"note":""},"todos":[],"notes":""},{"id":1780247298865,"label":"Jour 8","date":"2026-07-04","trains":[{"id":1780247301416,"from":"Torino Porta Susa","to":"Paris Gare de Lyon","depart":"17:41","arrivee":"23:14","numero":"TGV inoui 9250","note":"Voiture 13 - Places 334 335"}],"hotel":{},"todos":[],"notes":""}];
 
 // ── STATE ──
 // Migrate old single-train format to trains array
@@ -203,8 +203,10 @@ function renderNav() {
   days.forEach((d, i) => {
     const btn = document.createElement('button');
     btn.className = 'day-pill' + (d.id === activeDay ? ' active' : '');
-    const dateStr = d.date ? new Date(d.date+'T12:00:00').toLocaleDateString('fr-FR', {day:'2-digit',month:'short'}) : '';
-    btn.innerHTML = `<span class="day-num">${i+1}</span><span class="day-label">${dateStr || d.label.slice(0,6)}</span>`;
+    const dateObj = d.date ? new Date(d.date+'T12:00:00') : null;
+    const dayNum = dateObj ? dateObj.toLocaleDateString('fr-FR', {day:'2-digit'}) : String(i+1);
+    const monthStr = dateObj ? dateObj.toLocaleDateString('fr-FR', {month:'short'}).replace('.','') : '';
+    btn.innerHTML = `<span class="day-num">${dayNum}</span><span class="day-label">${monthStr}</span>`;
     btn.onclick = () => { activeDay = d.id; render(); };
     nav.appendChild(btn);
   });
@@ -250,6 +252,12 @@ function renderTrains(trains) {
         </div>
       </div>
     </div>`).join('');
+}
+
+function updateDayField(field, value) {
+  const day = getDay(activeDay); if (!day) return;
+  day[field] = value;
+  save();
 }
 
 function updateTrainField(trainId, field, value) {
@@ -311,6 +319,26 @@ function render() {
     <div class="day-date-header">
       <div class="day-date-display">${esc(day.label)}</div>
       ${dateStr ? `<div class="day-date-str">${dateStr}</div>` : ''}
+    </div>
+
+    <!-- ACTIVITES -->
+    <div class="section" id="sec-activites" style="margin-bottom:8px">
+      <div style="display:flex;flex-direction:column;gap:8px;padding:4px 0">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:16px">🏛</span>
+          <div style="flex:1">
+            <label class="field-label" style="margin-bottom:3px;display:block">Visite</label>
+            <input class="field-input" placeholder="ex: Musée du Louvre à 10h…" value="${esc(day.visite||'')}" oninput="updateDayField('visite',this.value)" />
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:16px">🍽</span>
+          <div style="flex:1">
+            <label class="field-label" style="margin-bottom:3px;display:block">Soirée / Dîner</label>
+            <input class="field-input" placeholder="ex: Restaurant Da Vittorio à 20h…" value="${esc(day.diner||'')}" oninput="updateDayField('diner',this.value)" />
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- TRAINS -->
