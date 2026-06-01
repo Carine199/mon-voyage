@@ -322,7 +322,11 @@ function renderNav() {
     const dayNum = dateObj ? dateObj.toLocaleDateString('fr-FR', {day:'2-digit'}) : String(i+1);
     const monthStr = dateObj ? dateObj.toLocaleDateString('fr-FR', {month:'short'}).replace('.','') : '';
     btn.innerHTML = `<span class="day-num">${dayNum}</span><span class="day-label">${monthStr}</span>`;
-    btn.onclick = () => { activeDay = d.id; render(); };
+    btn.onclick = () => {
+      activeDay = d.id;
+      SECTIONS.forEach(s => collapsed[s] = true);
+      render();
+    };
     nav.appendChild(btn);
   });
 }
@@ -465,10 +469,10 @@ function render() {
         </div>
         <div style="display:flex;align-items:center;gap:8px">
           ${trainBadge ? `<span class="section-badge">${esc(trainBadge)}</span>` : ''}
-          <span class="section-toggle" id="tog-train">▼</span>
+          <span class="section-toggle" id="tog-train">${collapsed["train"] ? "▶" : "▼"}</span>
         </div>
       </div>
-      <div class="section-body" id="body-train">
+      <div class="section-body${collapsed["train"] ? ' collapsed' : ''}" id="body-train">
         <div id="trains-container">${renderTrains(day.trains||[])}</div>
         <button id="add-train-btn-row" class="add-train-btn" onclick="addTrain()">+ Ajouter un train</button>
       </div>
@@ -483,10 +487,10 @@ function render() {
         </div>
         <div style="display:flex;align-items:center;gap:8px">
           ${day.hotel?.nom ? `<span class="section-badge">${esc(day.hotel.nom)}</span>` : ''}
-          <span class="section-toggle" id="tog-hotel">▼</span>
+          <span class="section-toggle" id="tog-hotel">${collapsed["hotel"] ? "▶" : "▼"}</span>
         </div>
       </div>
-      <div class="section-body" id="body-hotel">
+      <div class="section-body${collapsed["hotel"] ? ' collapsed' : ''}" id="body-hotel">
         <div id="hotel-container">
           ${day.hotel?.nom ? `
           <div class="train-card">
@@ -544,10 +548,10 @@ function render() {
         </div>
         <div style="display:flex;align-items:center;gap:8px">
           <span class="section-badge">${(day.todos||[]).filter(t=>t.done).length} / ${(day.todos||[]).length}</span>
-          <span class="section-toggle" id="tog-todos">▼</span>
+          <span class="section-toggle" id="tog-todos">${collapsed["todos"] ? "▶" : "▼"}</span>
         </div>
       </div>
-      <div class="section-body" id="body-todos">
+      <div class="section-body${collapsed["todos"] ? ' collapsed' : ''}" id="body-todos">
         <div class="todo-list" id="todo-list">${renderTodos(day.todos||[])}</div>
         <div class="todo-add-row">
           <input class="todo-add-input" id="todo-input" placeholder="Ajouter une activité…" onkeydown="if(event.key==='Enter')addTodo()" />
@@ -563,9 +567,9 @@ function render() {
           <span class="section-icon">📝</span>
           <span class="section-title">Notes du jour</span>
         </div>
-        <span class="section-toggle" id="tog-notes">▼</span>
+        <span class="section-toggle" id="tog-notes">${collapsed["notes"] ? "▶" : "▼"}</span>
       </div>
-      <div class="section-body" id="body-notes">
+      <div class="section-body${collapsed["notes"] ? ' collapsed' : ''}" id="body-notes">
         <textarea class="field-textarea" id="day-notes" placeholder="Impressions, souvenirs, idées…" style="min-height:100px" oninput="updateNotes()">${esc(day.notes||'')}</textarea>
       </div>
     </div>
@@ -582,7 +586,8 @@ function render() {
 }
 
 // ── SECTION TOGGLE ──
-const collapsed = {};
+const SECTIONS = ['train', 'hotel', 'todos', 'notes'];
+const collapsed = { train: true, hotel: true, todos: true, notes: true };
 function toggleSection(name) {
   collapsed[name] = !collapsed[name];
   const body = document.getElementById('body-'+name);
