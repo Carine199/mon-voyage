@@ -221,9 +221,9 @@ let ignoreNextSnapshot = false;
 function showSyncStatus(status) {
   let el = document.getElementById('sync-status');
   if (!el) return;
-  if (status === 'saving') { el.textContent = '⏳ Sync…'; el.style.color = '#b8882a'; }
-  else if (status === 'saved') { el.textContent = '✓ Synchronisé'; el.style.color = '#5a7a5a'; setTimeout(()=>{ el.textContent=''; }, 2000); }
-  else if (status === 'error') { el.textContent = '⚠ Erreur sync'; el.style.color = '#c0512a'; }
+  if (status === 'saving') { el.textContent = '⏳ Sync…'; el.style.color = '#f0c8c8'; }
+  else if (status === 'saved') { el.textContent = '✓ Synchronisé'; el.style.color = '#90EE90'; setTimeout(()=>{ el.textContent=''; }, 2000); }
+  else if (status === 'error') { el.textContent = '⚠ Erreur sync'; el.style.color = '#ffcdd2'; }
 }
 
 function save() {
