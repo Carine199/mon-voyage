@@ -576,20 +576,6 @@ function render() {
       </div>
     </div>
 
-    <!-- NOTES DU JOUR -->
-    <div class="section" id="sec-notes">
-      <div class="section-header" onclick="toggleSection('notes')">
-        <div class="section-left">
-          <span class="section-icon">📝</span>
-          <span class="section-title">Notes du jour</span>
-        </div>
-        <span class="section-toggle" id="tog-notes">${collapsed["notes"] ? "▶" : "▼"}</span>
-      </div>
-      <div class="section-body${collapsed["notes"] ? ' collapsed' : ''}" id="body-notes">
-        <textarea class="field-textarea" id="day-notes" placeholder="Impressions, souvenirs, idées…" style="min-height:100px" oninput="updateNotes()">${esc(day.notes||'')}</textarea>
-      </div>
-    </div>
-
     <!-- LIENS & CARTES -->
     <div class="section" id="sec-liens">
       <div class="section-header" onclick="toggleSection('liens')">
@@ -607,6 +593,21 @@ function render() {
         <button class="add-train-btn" onclick="addLien()">+ Ajouter un lien</button>
       </div>
     </div>
+
+    <!-- NOTES DU JOUR -->
+    <div class="section" id="sec-notes">
+      <div class="section-header" onclick="toggleSection('notes')">
+        <div class="section-left">
+          <span class="section-icon">📝</span>
+          <span class="section-title">Notes du jour</span>
+        </div>
+        <span class="section-toggle" id="tog-notes">${collapsed["notes"] ? "▶" : "▼"}</span>
+      </div>
+      <div class="section-body${collapsed["notes"] ? ' collapsed' : ''}" id="body-notes">
+        <textarea class="field-textarea" id="day-notes" placeholder="Impressions, souvenirs, idées…" style="min-height:100px" oninput="updateNotes()">${esc(day.notes||'')}</textarea>
+      </div>
+    </div>
+
 
     <div id="delete-confirm" style="display:none;margin-top:4px;background:#fff5f2;border:1px solid #f0c0b0;border-radius:10px;padding:14px 16px;text-align:center">
       <div style="font-size:14px;margin-bottom:12px;color:var(--rust)">Supprimer ce jour définitivement ?</div>
