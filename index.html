@@ -509,12 +509,28 @@ function initCarteZoom() {
     var r=czWrap.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top,d=e.deltaY<0?0.2:-0.2,ns=Math.min(5,Math.max(0.3,czSc+d));
     czTx=mx-(mx-czTx)*(ns/czSc);czTy=my-(my-czTy)*(ns/czSc);czSc=ns;czClamp();czApply();
   },{passive:false});
-  czWrap.addEventListener('mousedown',function(e){czDrag=true;czSx=e.clientX;czSy=e.clientY;czStx=czTx;czSty=czTy;e.preventDefault();});
-  window.addEventListener('mousemove',function(e){if(!czDrag)return;czTx=czStx+e.clientX-czSx;czTy=czSty+e.clientY-czSy;czClamp();czApply();});
+  var czMoved=false;
+  czWrap.addEventListener('mousedown',function(e){czDrag=true;czMoved=false;czSx=e.clientX;czSy=e.clientY;czStx=czTx;czSty=czTy;});
+  window.addEventListener('mousemove',function(e){if(!czDrag)return;if(Math.abs(e.clientX-czSx)>3||Math.abs(e.clientY-czSy)>3){czMoved=true;czTx=czStx+e.clientX-czSx;czTy=czSty+e.clientY-czSy;czClamp();czApply();}});
   window.addEventListener('mouseup',function(){czDrag=false;});
-  czWrap.addEventListener('touchstart',function(e){e.preventDefault();if(e.touches.length===1){czDrag=true;czSx=e.touches[0].clientX;czSy=e.touches[0].clientY;czStx=czTx;czSty=czTy;}if(e.touches.length===2){czLd=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}},{passive:false});
-  czWrap.addEventListener('touchmove',function(e){e.preventDefault();if(e.touches.length===1&&czDrag){czTx=czStx+e.touches[0].clientX-czSx;czTy=czSty+e.touches[0].clientY-czSy;czClamp();czApply();}if(e.touches.length===2&&czLd){var d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);czSc=Math.min(5,Math.max(0.3,czSc*d/czLd));czLd=d;czClamp();czApply();}},{passive:false});
-  czWrap.addEventListener('touchend',function(){czDrag=false;czLd=null;});
+  var czTouchMoved=false;
+  czWrap.addEventListener('touchstart',function(e){
+    if(e.touches.length===1){czDrag=true;czTouchMoved=false;czSx=e.touches[0].clientX;czSy=e.touches[0].clientY;czStx=czTx;czSty=czTy;}
+    if(e.touches.length===2){e.preventDefault();czLd=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}
+  },{passive:true});
+  czWrap.addEventListener('touchmove',function(e){
+    e.preventDefault();
+    if(e.touches.length===1&&czDrag){var dx=e.touches[0].clientX-czSx,dy=e.touches[0].clientY-czSy;if(Math.abs(dx)>5||Math.abs(dy)>5){czTouchMoved=true;czTx=czStx+dx;czTy=czSty+dy;czClamp();czApply();}}
+    if(e.touches.length===2&&czLd){var d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);czSc=Math.min(5,Math.max(0.3,czSc*d/czLd));czLd=d;czClamp();czApply();}
+  },{passive:false});
+  czWrap.addEventListener('touchend',function(e){
+    if(!czTouchMoved&&e.changedTouches.length===1){
+      var t=e.changedTouches[0];
+      var el=document.elementFromPoint(t.clientX,t.clientY);
+      while(el&&el!==czWrap){if(el.onclick)el.click();el=el.parentElement;}
+    }
+    czDrag=false;czLd=null;czTouchMoved=false;
+  });
   // filtres
   var cdayDefs=[{id:'j2',label:'J2 · Turin→Gênes'},{id:'j3',label:'J3 · Gênes→La Spezia'},{id:'j4',label:'J4 · Pise A/R'},{id:'j7',label:'J7 · La Spezia→Turin'}];
   var cfd=document.getElementById('cday-filter');
@@ -555,12 +571,28 @@ function initCTZoom(){
     var r=ctzWrap.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top,d=e.deltaY<0?0.2:-0.2,ns=Math.min(5,Math.max(0.3,ctzSc+d));
     ctzTx=mx-(mx-ctzTx)*(ns/ctzSc);ctzTy=my-(my-ctzTy)*(ns/ctzSc);ctzSc=ns;ctzClamp();ctzApply();
   },{passive:false});
-  ctzWrap.addEventListener('mousedown',function(e){ctzDrag=true;ctzSx=e.clientX;ctzSy=e.clientY;ctzStx=ctzTx;ctzSty=ctzTy;e.preventDefault();});
-  window.addEventListener('mousemove',function(e){if(!ctzDrag)return;ctzTx=ctzStx+e.clientX-ctzSx;ctzTy=ctzSty+e.clientY-ctzSy;ctzClamp();ctzApply();});
+  var ctzMoved=false;
+  ctzWrap.addEventListener('mousedown',function(e){ctzDrag=true;ctzMoved=false;ctzSx=e.clientX;ctzSy=e.clientY;ctzStx=ctzTx;ctzSty=ctzTy;});
+  window.addEventListener('mousemove',function(e){if(!ctzDrag)return;if(Math.abs(e.clientX-ctzSx)>3||Math.abs(e.clientY-ctzSy)>3){ctzMoved=true;ctzTx=ctzStx+e.clientX-ctzSx;ctzTy=ctzSty+e.clientY-ctzSy;ctzClamp();ctzApply();}});
   window.addEventListener('mouseup',function(){ctzDrag=false;});
-  ctzWrap.addEventListener('touchstart',function(e){e.preventDefault();if(e.touches.length===1){ctzDrag=true;ctzSx=e.touches[0].clientX;ctzSy=e.touches[0].clientY;ctzStx=ctzTx;ctzSty=ctzTy;}if(e.touches.length===2){ctzLd=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}},{passive:false});
-  ctzWrap.addEventListener('touchmove',function(e){e.preventDefault();if(e.touches.length===1&&ctzDrag){ctzTx=ctzStx+e.touches[0].clientX-ctzSx;ctzTy=ctzSty+e.touches[0].clientY-ctzSy;ctzClamp();ctzApply();}if(e.touches.length===2&&ctzLd){var d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);ctzSc=Math.min(5,Math.max(0.3,ctzSc*d/ctzLd));ctzLd=d;ctzClamp();ctzApply();}},{passive:false});
-  ctzWrap.addEventListener('touchend',function(){ctzDrag=false;ctzLd=null;});
+  var ctzTouchMoved=false;
+  ctzWrap.addEventListener('touchstart',function(e){
+    if(e.touches.length===1){ctzDrag=true;ctzTouchMoved=false;ctzSx=e.touches[0].clientX;ctzSy=e.touches[0].clientY;ctzStx=ctzTx;ctzSty=ctzTy;}
+    if(e.touches.length===2){e.preventDefault();ctzLd=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}
+  },{passive:true});
+  ctzWrap.addEventListener('touchmove',function(e){
+    e.preventDefault();
+    if(e.touches.length===1&&ctzDrag){var dx=e.touches[0].clientX-ctzSx,dy=e.touches[0].clientY-ctzSy;if(Math.abs(dx)>5||Math.abs(dy)>5){ctzTouchMoved=true;ctzTx=ctzStx+dx;ctzTy=ctzSty+dy;ctzClamp();ctzApply();}}
+    if(e.touches.length===2&&ctzLd){var d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);ctzSc=Math.min(5,Math.max(0.3,ctzSc*d/ctzLd));ctzLd=d;ctzClamp();ctzApply();}
+  },{passive:false});
+  ctzWrap.addEventListener('touchend',function(e){
+    if(!ctzTouchMoved&&e.changedTouches.length===1){
+      var t=e.changedTouches[0];
+      var el=document.elementFromPoint(t.clientX,t.clientY);
+      while(el&&el!==ctzWrap){if(el.onclick)el.click();el=el.parentElement;}
+    }
+    ctzDrag=false;ctzLd=null;ctzTouchMoved=false;
+  });
   ctzClamp();ctzApply();
 }
 function ctpinClick(name,hotel,info){
