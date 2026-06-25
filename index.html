@@ -6,7 +6,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Italie 2026" />
-  <link rel="apple-touch-icon" href="icon.png"/>
+  <link rel="apple-touch-icon" href="/icon.png"/>
+  <link rel="manifest" href="/manifest.json"/>
   <title>Italie 2026 🚆</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
@@ -338,8 +339,8 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyDXpGjJyC1nbP7VQ85zOnaAGIQJ4LTuteI",
@@ -352,6 +353,16 @@ const firebaseConfig = {
 const fbApp = initializeApp(firebaseConfig);
 const db = getFirestore(fbApp);
 const auth = getAuth(fbApp);
+
+// ── MODE HORS-LIGNE ──
+// Garde une copie locale des données Firestore (lecture possible sans réseau)
+enableIndexedDbPersistence(db).catch((err) => {
+  console.warn("Persistance offline non activée:", err.code);
+});
+// Garde la session de connexion même hors-ligne / après fermeture de l'app
+setPersistence(auth, browserLocalPersistence).catch((err) => {
+  console.warn("Persistance auth non activée:", err.code);
+});
 const VOYAGE_DOC = doc(db,"voyage","italie2026");
 const ALLOWED_EMAILS = ["carineb199@gmail.com","guill.ber69@gmail.com"];
 
@@ -365,14 +376,49 @@ function save(){showSyncStatus("saving");clearTimeout(saveTimeout);saveTimeout=s
 function getDay(id){return days.find(d=>d.id===id);}
 
 async function loadData(){
-  try{const snap=await getDoc(VOYAGE_DOC);if(snap.exists()&&snap.data().days){const r=JSON.parse(snap.data().days).map(migrateDay);if(r.length>0){days=r;activeDay=days[0].id;}}else{await setDoc(VOYAGE_DOC,{days:JSON.stringify(days)});}}catch(e){console.error(e);}
+  try{
+    const snap=await getDoc(VOYAGE_DOC);
+    if(snap.exists()&&snap.data().days){
+      const r=JSON.parse(snap.data().days).map(migrateDay);
+      if(r.length>0){days=r;activeDay=days[0].id;}
+    } else if (navigator.onLine) {
+      await setDoc(VOYAGE_DOC,{days:JSON.stringify(days)});
+    }
+  }catch(e){
+    console.warn("loadData: lecture impossible (probablement hors-ligne), utilisation des données en cache/défaut.", e);
+  }
   render();
-  onSnapshot(VOYAGE_DOC,(snap)=>{if(ignoreNextSnapshot){ignoreNextSnapshot=false;return;}if(snap.exists()&&snap.data().days){const r=JSON.parse(snap.data().days).map(migrateDay);if(r.length>0){days=r;if(!getDay(activeDay))activeDay=days[0].id;render();showSyncStatus("saved");}}});
+  try{
+    onSnapshot(VOYAGE_DOC,(snap)=>{
+      if(ignoreNextSnapshot){ignoreNextSnapshot=false;return;}
+      if(snap.exists()&&snap.data().days){
+        const r=JSON.parse(snap.data().days).map(migrateDay);
+        if(r.length>0){days=r;if(!getDay(activeDay))activeDay=days[0].id;render();showSyncStatus("saved");}
+      }
+    }, (err)=>{ console.warn("onSnapshot erreur (hors-ligne ?):", err); });
+  }catch(e){ console.warn("onSnapshot non disponible:", e); }
 }
 function showLoginScreen(msg){document.getElementById("app-wrapper").style.display="none";document.getElementById("login-screen").style.display="flex";if(msg)document.getElementById("login-error").textContent=msg;}
 function hideLoginScreen(){document.getElementById("login-screen").style.display="none";document.getElementById("app-wrapper").style.display="block";}
 async function signInWithGoogle(){try{const p=new GoogleAuthProvider();const r=await signInWithPopup(auth,p);if(!ALLOWED_EMAILS.includes(r.user.email)){await signOut(auth);showLoginScreen("Accès refusé pour "+r.user.email);}}catch(e){showLoginScreen("Erreur de connexion, réessayez.");}}
-function initFirebase(){onAuthStateChanged(auth,async(user)=>{if(user&&ALLOWED_EMAILS.includes(user.email)){document.getElementById("user-email").textContent=user.email.split("@")[0];hideLoginScreen();await loadData();}else{showLoginScreen();}});}
+function initFirebase(){
+  // Indicateur réseau
+  window.addEventListener("online", ()=>{ const el=document.getElementById("sync-status"); if(el) el.textContent="✓ En ligne"; setTimeout(()=>{ if(el) el.textContent=""; },2000); });
+  window.addEventListener("offline", ()=>{ const el=document.getElementById("sync-status"); if(el){ el.textContent="📡 Hors connexion"; el.style.color="#f0c8c8"; } });
+
+  onAuthStateChanged(auth,async(user)=>{
+    if(user&&ALLOWED_EMAILS.includes(user.email)){
+      document.getElementById("user-email").textContent=user.email.split("@")[0];
+      hideLoginScreen();
+      await loadData();
+    } else if (user===null && !navigator.onLine) {
+      // Hors-ligne et pas encore de session restaurée : on affiche un message d'attente plutôt que de bloquer
+      showLoginScreen("Hors connexion — reconnecte-toi à internet une fois pour activer le mode hors-ligne.");
+    } else {
+      showLoginScreen();
+    }
+  });
+}
 window.signInWithGoogle=signInWithGoogle;
 window.signOutUser=()=>signOut(auth);
 
@@ -615,6 +661,15 @@ function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").
 Object.assign(window,{toggleSection,addTrain,deleteTrain,updateTrainField,addHotel,deleteHotel,updateHotel,setStars,addTodo,deleteTodo,toggleTodo,updateDayField,updateNotes,addLien,saveLien,cancelLien,deleteLien,openAddDay,addDay,closeModal,maybeCloseModal,confirmDeleteDay,openExport,closeExport,selectExportText});
 
 initFirebase();
+
+// ── SERVICE WORKER : permet de recharger l'app même sans réseau ──
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch((err) => {
+      console.warn("Service Worker non enregistré:", err);
+    });
+  });
+}
 </script>
 </body>
 </html>
